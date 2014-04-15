@@ -8,9 +8,10 @@
 /*---------------------------------------------------------------------------*/
 /* Objeto dentro de cada no da arvore                                        */ 
 /*---------------------------------------------------------------------------*/
-typedef long int TipoChave;
+typedef int TipoChave;
 typedef struct Registro {
   TipoChave Chave;
+  char *valor;
   int bal;  
 } Registro;
 

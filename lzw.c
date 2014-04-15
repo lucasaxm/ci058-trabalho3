@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include "arvBin/arvBin.h"
 
-char *CriaDicionario (int);
+void CriaDicionario (int);
 
 int main(int argc, char const *argv[])
 {
-	char *dicionario = CriaDicionario(255);
+	Apontador dicionario;
+	arv_inicializa(&dicionario);
 	printf("ASCII:\n");
 	printf("Chave\tValor\n");
 	for (int i = 0; i < 127; ++i)
@@ -16,11 +17,15 @@ int main(int argc, char const *argv[])
 	return 0;
 }
 
-char *CriaDicionario (int tam)
+void CriaDicionario (Apontador dicionario)
 {
 	int i;
-	char *d = (char *) malloc (sizeof(char)*tam);
+	Registro r;
 	for (int i = 0; i < 127; i++)
-		d[i]=(char) i;
+	{
+		r.Chave = i;
+		*(r.Valor) = (char) i;
+		arv_insere
+	}
 	return d;
 }
