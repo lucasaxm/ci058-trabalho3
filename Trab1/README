@@ -1,0 +1,31 @@
+O programa trata-se da implementacao de uma arvore binaria. 
+A compilação pode ser feita executando o comando: 
+>> make limpa - onde os arquivos gerados na execução do programa sejam apagados, para que nao haja problemas na proxima execução, 
+>> make - onde e' feita a compilacao.
+o comando ./arvBin executa o programa e com o comando ./arvBin <teste> e' lido do arquivo as entradas para o programa. 
+O arquivo 'main.c" contem o menu principal, a biblioteca e' guardada no arquivo "arvBin.h", as funcoes da biblioteca "arvBin.h" estao no arquivo "arvBin.c", a impressao da arvore esta no arquivo "log.txt", e o arquivo gerado possui o nome de "arvBin.o".
+O programa recebe como entrada um arquivo teste ou stdin, e a saída e' stdout.
+Funcoes do arquivo do arquivo "arvBin.c"
+Alem das funcoes dadas em aula:
+-nodo_cria;
+-nodo_destroi;
+-arv_inicializa;
+-arv_imprime;
+-arv_busca;
+-RotacaoDireita;
+-RotacaoEsquerda;
+-arv_insere;
+-JuntaEsqDir
+-arv_remove;
+-particao;
+Foram implementadas as seguintes funcoes:
+- FILE *abre_arquivo: funcao que cria, escreve no arquivo "log.txt" o com o comando "w+".Caso o arquivo nao seja criado imprime um erro.
+-LimpaBuffer:Descarta caracteres que estao no buffer de entrada ate encontra um \n;
+-ngets:le strings;
+-atualizaBal:atualiza a variavel de balanceamento do registrador que esta dentro nodo;
+-altura: calcula a altura da arvore binaria;
+-atualizaCont:atualiza o contador dos nodos da arvore binaria;
+-arv_balanceia:balanceia os nodos inseridos na arvore binaria, atualiza o balanceamento e o contador dos nodos.A ideia principal dessa funcao e' encontrar uma subarvore do formato AVL e a partir dela balancear as outras.E' feita na funcao rotacoes simples e rotacoes duplas. Por nao se tratar de uma arvore AVL onde o fator de balanceamento do pai e' somente 2 ou -2, e de seu filho -1 e 1, e' tratado para os casos em que a variacao do pai e dos filhos tem fator de balanceamento maior.  
+-auxBalanceiaArv:foi criada para tratar de uma excessao como a arvore "10 5 11 6 1 30 24 41 27 50 46 45 70" nela a localidade do numero 10 nao balanceia. Uma forma de resolver o problema foi executar a funcao arv_balanceia duas vezes.
+Foram feitos varios teste com arvores de tamanhos e balanceamentos diferentes obtivemos sucesso em todos os casos.
+Codigo escrito por Evelim Carla Ribeiro GRR20101622 e Florence Pereira da Silva GRR20101934.
