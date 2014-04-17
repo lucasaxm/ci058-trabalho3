@@ -3,8 +3,8 @@
 #include <string.h>
 
 
-#define DICTAMMAX 60000;
-#define STRTAMMAX 11;
+#define DICTAMMAX 60000
+#define STRTAMMAX 11
 
 
 char **abre_dicionario (char **, unsigned short int, FILE *);
@@ -38,24 +38,25 @@ int main(int argc, char const *argv[])
 	}
 	arq_semext[i]='\0';
 	dicname[i]='\0';
-	dicname = strcat(dicname,".dic");
+	char pontodic[]=".dic";
+	dicname = strcat(dicname,pontodic);
 
 	FILE *dicfile = abre_arquivo(dicname,"a+");
 	unsigned short int tamdic;
-	if (!fread(tamdic, sizeof(unsigned short int), 1, dicfile))
-	{
+	if (!fscanf(dicfile, "%hd",&tamdic))
+	{	// novo dicionario
 		tamdic = 0;
 	}
 	else
-	{
+	{	// dicionario já existe
 		fgetc (dicfile);
-		char **dicionario = abre_dicionario(dicionario,tamdic,tamfile);
+		dicionario = abre_dicionario(dicionario,tamdic,dicfile);
 	}
-	printf("Chave\tValor\n");
+/*	printf("Chave\tValor\n");
 	for (int i = 0; i < tamdic; ++i)
 	{
 		printf("%i\t", i,dicionario[i]);
-	}
+	}*/
 	return 0;
 }
 
@@ -70,21 +71,17 @@ int conta_linhas(FILE *arq)
 
 char **abre_dicionario (char **d, unsigned short int tam, FILE *dicfile)
 {
-	if (tam!=0)
+	int i;
+	for (!feof(dicfile))
 	{
-		int i;
-		for (!feof(dicfile))
+		if (!fscanf (dicfile, "%hd", &i)) // le indicie
 		{
-			if (!fread (i,sizeof(unsigned short int), 1, dicfile)) // le indicie
-			{
-				printf("Erro ao ler tamanho do dicionario do arquivo\n");
-				exit(1);
-			}
-
-			fgetc(dicfile); // le separador
-
-			d[i] = ngets(d[i],10,dicfile);
+			printf("Erro ao ler tamanho do dicionario do arquivo\n");
+			exit(1);
 		}
+		fgetc(dicfile); // le separador
+
+		d[i] = ngets(d[i],10,dicfile);
 	}
 	return d;
 }
@@ -125,3 +122,9 @@ char *ngets (char *str, int n, FILE *fp)
 		LimpaBuffer();
 	return str;
 }
+
+
+/*3
+A_
+_A
+AS*/
