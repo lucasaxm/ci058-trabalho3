@@ -2,6 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+#define DICTAMMAX 60000;
+#define STRTAMMAX 11;
+
+
+char **abre_dicionario (unsigned short int, FILE *);
 char *insere_no_dicionario (int);
 FILE *abre_arquivo(const char *, const char *);
 char *ngets(char *, int, FILE *);
@@ -20,6 +26,8 @@ int main(int argc, char const *argv[])
 		return 0;
 	}
 	int i,t;
+
+	char dicionario[DICTAMMAX][STRTAMMAX];
 
 	for (t = 0; (argv[2][t]!='.') && (argv[2][t]!='\0') ; t++);	//descobre tamanho do nome do arquivo sem extensao
 	char arq_semext[t+1]; // "nome_do_arquivo_sem_extensao"+"\0"
@@ -60,24 +68,22 @@ int conta_linhas(FILE *arq)
 	return cont;
 }
 
-char **cria_dicionario (unsigned short int tam, FILE *dicfile)
+char **abre_dicionario (char **d, unsigned short int tam, FILE *dicfile)
 {
 	if (tam!=0)
 	{
 		int i;
-		char *
-		char d[/*max unsigned short int*/][/*maior padrao*/];
 		for (!feof(dicfile))
 		{
-			if (!fread (i,sizeof(unsigned short int), 1, dicfile))
+			if (!fread (i,sizeof(unsigned short int), 1, dicfile)) // le indicie
 			{
 				printf("Erro ao ler tamanho do dicionario do arquivo\n");
 				exit(1);
 			}
 
-			fgetc(dicfile);
+			fgetc(dicfile); // le separador
 
-			fgets ()
+			d[i] = ngets(d[i],10,dicfile);
 		}
 	}
 	return d;
