@@ -7,7 +7,7 @@
 #define STRTAMMAX 11;
 
 
-char **abre_dicionario (unsigned short int, FILE *);
+char **abre_dicionario (char **, unsigned short int, FILE *);
 char *insere_no_dicionario (int);
 FILE *abre_arquivo(const char *, const char *);
 char *ngets(char *, int, FILE *);
@@ -26,8 +26,7 @@ int main(int argc, char const *argv[])
 		return 0;
 	}
 	int i,t;
-
-	char dicionario[DICTAMMAX][STRTAMMAX];
+	char dicionario[DICTAMMAX][STRTAMMAX];	//vetor com o dicionario
 
 	for (t = 0; (argv[2][t]!='.') && (argv[2][t]!='\0') ; t++);	//descobre tamanho do nome do arquivo sem extensao
 	char arq_semext[t+1]; // "nome_do_arquivo_sem_extensao"+"\0"
@@ -39,18 +38,19 @@ int main(int argc, char const *argv[])
 	}
 	arq_semext[i]='\0';
 	dicname[i]='\0';
-
 	dicname = strcat(dicname,".dic");
 
 	FILE *dicfile = abre_arquivo(dicname,"a+");
 	unsigned short int tamdic;
 	if (!fread(tamdic, sizeof(unsigned short int), 1, dicfile))
 	{
-		printf("Erro ao ler tamanho do dicionario do arquivo\n");
-		exit(1);
+		tamdic = 0;
 	}
-	fgetc (dicfile);
-	char **dicionario = cria_dicionario(tamdic,tamfile);
+	else
+	{
+		fgetc (dicfile);
+		char **dicionario = abre_dicionario(dicionario,tamdic,tamfile);
+	}
 	printf("Chave\tValor\n");
 	for (int i = 0; i < tamdic; ++i)
 	{
@@ -91,10 +91,6 @@ char **abre_dicionario (char **d, unsigned short int tam, FILE *dicfile)
 
 char *insere_no_dicionario (int n)
 {
-	int i;
-	char *d = (char *) malloc (sizeof(char)*tam);
-	for (int i = 0; i < 127; i++)
-		d[i]=(char) i;
 	return d;
 }
 
