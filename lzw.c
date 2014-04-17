@@ -1,26 +1,125 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "arvBin/arvBin.h"
+#include <string.h>
 
-char *CriaDicionario (int);
+char *insere_no_dicionario (int);
+FILE *abre_arquivo(const char *, const char *);
+char *ngets(char *, int, FILE *);
+void LimpaBuffer ();
 
 int main(int argc, char const *argv[])
 {
-	char *dicionario = CriaDicionario(255);
-	printf("ASCII:\n");
-	printf("Chave\tValor\n");
-	for (int i = 0; i < 127; ++i)
+	if (argc!=3)
 	{
-		printf("%i\t%c\n", i,dicionario[i]);
+		printf 	("Numero de argumentos invalido.\n\n"
+				 "SINTAXE:\n"
+				 "\t./lzw opcao arquivo\n"
+				 "OPCOES:\n"
+				 "\t-c\tCompactar arquivo\n"
+				 "\t-d\tDescompactar arquivo\n");
+		return 0;
+	}
+	int i,t;
+
+	for (t = 0; (argv[2][t]!='.') && (argv[2][t]!='\0') ; t++);	//descobre tamanho do nome do arquivo sem extensao
+	char arq_semext[t+1]; // "nome_do_arquivo_sem_extensao"+"\0"
+	char dicname[t+5]; // "nome_do_arquivo_sem_extensao"+".dic"+"\0"
+	for (int i = 0; i < t; i++)
+	{
+		arq_semext[i]=argv[2][i];
+		dicname[i]=argv[2][i];
+	}
+	arq_semext[i]='\0';
+	dicname[i]='\0';
+
+	dicname = strcat(dicname,".dic");
+
+	FILE *dicfile = abre_arquivo(dicname,"a+");
+	unsigned short int tamdic;
+	if (!fread(tamdic, sizeof(unsigned short int), 1, dicfile))
+	{
+		printf("Erro ao ler tamanho do dicionario do arquivo\n");
+		exit(1);
+	}
+	fgetc (dicfile);
+	char **dicionario = cria_dicionario(tamdic,tamfile);
+	printf("Chave\tValor\n");
+	for (int i = 0; i < tamdic; ++i)
+	{
+		printf("%i\t", i,dicionario[i]);
 	}
 	return 0;
 }
 
-char *CriaDicionario (int tam)
+int conta_linhas(FILE *arq)
+{
+	int cont=0;
+	while (!feof(arq))
+		if (fgetc(arq)=='\n')
+			cont++;
+	return cont;
+}
+
+char **cria_dicionario (unsigned short int tam, FILE *dicfile)
+{
+	if (tam!=0)
+	{
+		int i;
+		char *
+		char d[/*max unsigned short int*/][/*maior padrao*/];
+		for (!feof(dicfile))
+		{
+			if (!fread (i,sizeof(unsigned short int), 1, dicfile))
+			{
+				printf("Erro ao ler tamanho do dicionario do arquivo\n");
+				exit(1);
+			}
+
+			fgetc(dicfile);
+
+			fgets ()
+		}
+	}
+	return d;
+}
+
+char *insere_no_dicionario (int n)
 {
 	int i;
 	char *d = (char *) malloc (sizeof(char)*tam);
 	for (int i = 0; i < 127; i++)
 		d[i]=(char) i;
 	return d;
+}
+
+FILE *abre_arquivo(const char *path, const char *mode)
+{ 
+	FILE *fp; 
+	fp = fopen(path,mode);// Abre o arquivo para leitura e escrita
+	if (fp == NULL) // se o arquivo nao existir exibe a mensagem de erro.
+	{
+		printf("Houve um erro ao abrir o arquivo\n");
+		exit(1);
+	}
+	return fp;
+}
+
+/*---------------------------------------------------------------------------*/
+/*Descarta caracteres que estao no buffer de entrada ate que encontre um '\n'*/
+/*---------------------------------------------------------------------------*/
+void LimpaBuffer ()
+{
+	while (getchar()!='\n');
+}
+/*---------------------------------------------------------------------------*/
+/*Criadas para ler strings						     */
+/*---------------------------------------------------------------------------*/
+char *ngets (char *str, int n, FILE *fp)
+{
+	str = fgets (str, n, stdin);
+	if (str[strlen(str)-1]=='\n')
+		str[strlen(str)-1]='\0';
+	else
+		LimpaBuffer();
+	return str;
 }
