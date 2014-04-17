@@ -8,7 +8,7 @@
 
 void descompacta (char **, unsigned short int *, FILE *, FILE *);
 void compacta (char **, unsigned short int *, FILE *, FILE *);
-unsigned short int acha_nova_string_d (char **, unsigned short int *, FILE *, char *);
+void acha_nova_string_d (char **, unsigned short int *, FILE *, char *);
 unsigned short int acha_nova_string_c (char **, unsigned short int *, FILE *, char *);
 unsigned short int busca_dicionario (char **, unsigned short int, char *);
 char *insere_no_dicionario (int);
@@ -46,7 +46,7 @@ int main(int argc, char const *argv[])
 			strcpy(outname,arq_semext);
 			char pontolzw[]=".lzw";
 			strcat(outname,pontolzw);
-			FILE *outfile = abre_arquivo(outname,"w");
+			FILE *outfile = abre_arquivo(outname,"wb");
 			compacta (dicionario,&tamdic,infile,outfile);
 			fclose (infile);
 			fclose (outfile);
@@ -54,7 +54,7 @@ int main(int argc, char const *argv[])
 		}
 		case 'd':
 		{
-			FILE *infile = abre_arquivo(argv[2],"r");
+			FILE *infile = abre_arquivo(argv[2],"rb");
 			char outname[t+5];
 			strcpy(outname,arq_semext);
 			char pontotxt[]=".txt";
@@ -93,21 +93,21 @@ int conta_linhas(FILE *arq)
 void descompacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE *out)
 {
 	char str[STRTAMMAX];
-	unsigned short int code;
 	while (!feof(in))
 	{
-		code = acha_nova_string_d (dicionario, tamdic, in, str);
+		acha_nova_string_d (dicionario, tamdic, in, str);
 		strcpy(dicionario[(*tamdic)++],str);
+		str[strlen(str)-1]=0;
 		if (!feof(in))
 		{
 			fputs(str,out);
-			fseek (in,-1,SEEK_CUR);
+			fseek (in,-sizeof(unsigned short int),SEEK_CUR);
 		}
 	}
 	(*tamdic)--;
 }
 
-unsigned short int acha_nova_string_d (char **dicionario, unsigned short int *tamdic, FILE *in, char *str)
+void acha_nova_string_d (char **dicionario, unsigned short int *tamdic, FILE *in, char *str)
 {
 	int i, achei=0;
 	unsigned short int code, temp;
@@ -116,25 +116,16 @@ unsigned short int acha_nova_string_d (char **dicionario, unsigned short int *ta
 	i=0;
 	while ( (!achei) && (i<11) )
 	{
-		fscanf (in,"%hd",&code);
+		// fscanf (in,"%hd",&code);
+		fread (&code, sizeof(unsigned short int), 1, in);
 		if (code<128)
 			str[i]= (char)code;
-		if (strlen(str)==1)
-			i++;
-		else
-		{
-			temp = busca_dicionario(dicionario, *tamdic, str);
-			if (temp!=0)
-				code = temp;
-			else
-			{
-				achei=1;
-				str[i]=0;	// cuidado
-			}
-			i++;
-		}
+		else if ( (code-128) < (*tamdic) )
+			strcat(str,dicionario[code-128]);
+		if (i!=0)
+			achei=1;
+		i++;
 	}
-	return code;
 }
 
 void compacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE *out)
@@ -147,7 +138,8 @@ void compacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE *ou
 		strcpy(dicionario[(*tamdic)++],str);
 		if (!feof(in))
 		{
-			fprintf(out, "%hd", code);
+			// fprintf(out, "%hd", code);
+			fwrite (&code, sizeof(unsigned short int), 1, out);
 			fseek (in,-1,SEEK_CUR);
 		}
 	}
