@@ -4,7 +4,7 @@
 
 
 #define DICTAMMAX 60000
-#define STRTAMMAX 11
+#define STRTAMMAX 10000
 
 void descompacta (char **, unsigned short int *, FILE *, FILE *);
 void compacta (char **, unsigned short int *, FILE *, FILE *);
@@ -93,38 +93,52 @@ int conta_linhas(FILE *arq)
 void descompacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE *out)
 {
 	char str[STRTAMMAX];
+
 	while (!feof(in))
 	{
 		acha_nova_string_d (dicionario, tamdic, in, str);
-		strcpy(dicionario[(*tamdic)++],str);
-		str[strlen(str)-1]=0;
+		if (*tamdic<DICTAMMAX)
+			strcpy(dicionario[(*tamdic)++],str);
+		else
+		{
+			puts ("Dicionario cheio!");
+			puts (str);
+		}
 		if (!feof(in))
 		{
-			fputs(str,out);
+			str[strlen(str)-1]=0;
 			fseek (in,-sizeof(unsigned short int),SEEK_CUR);
 		}
+		fputs(str,out);
 	}
 	(*tamdic)--;
 }
 
 void acha_nova_string_d (char **dicionario, unsigned short int *tamdic, FILE *in, char *str)
 {
-	int i, achei=0;
-	unsigned short int code, temp;
-	for (i = 0; i < STRTAMMAX; i++)
-		str[i]=0;
-	i=0;
-	while ( (!achei) && (i<11) )
+	unsigned short int code;
+	char buffer[STRTAMMAX];
+	memset(str,0,STRTAMMAX);
+	int i=0, j=0, achei=0;
+	while ( (!achei) )
 	{
-		// fscanf (in,"%hd",&code);
-		fread (&code, sizeof(unsigned short int), 1, in);
-		if (code<128)
-			str[i]= (char)code;
-		else if ( (code-128) < (*tamdic) )
-			strcat(str,dicionario[code-128]);
-		if (i!=0)
+		if (fread (&code, sizeof(unsigned short int), 1, in))
+		{
+			if (code<128)
+				str[i++]= (char)code;
+			else if ( (code-128) < (*tamdic) ){
+				strcat(str,dicionario[code-128]);
+
+				if (j!=0)
+					str[strlen(str)-1]=0;
+				i+=(strlen(dicionario[code-128]));
+			}
+			if (j!=0)
+				achei=1;
+			j++;
+		}
+		else
 			achei=1;
-		i++;
 	}
 }
 
@@ -135,13 +149,11 @@ void compacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE *ou
 	while (!feof(in))
 	{
 		code = acha_nova_string_c(dicionario, tamdic, in, str);
-		strcpy(dicionario[(*tamdic)++],str);
+		if (*tamdic<DICTAMMAX)
+			strcpy(dicionario[(*tamdic)++],str);
+		fwrite (&code, sizeof(unsigned short int), 1, out);
 		if (!feof(in))
-		{
-			// fprintf(out, "%hd", code);
-			fwrite (&code, sizeof(unsigned short int), 1, out);
 			fseek (in,-1,SEEK_CUR);
-		}
 	}
 	(*tamdic)--;
 }
@@ -153,7 +165,7 @@ unsigned short int acha_nova_string_c (char **dicionario, unsigned short int *ta
 	for (i = 0; i < STRTAMMAX; i++)
 		str[i]=0;
 	i=0;
-	while ( (!achei) && (i<11) )
+	while ( (!achei) )
 	{
 		str[i]=fgetc(in);
 		if (strlen(str)==1)
