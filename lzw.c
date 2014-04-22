@@ -4,7 +4,7 @@
 
 
 #define DICTAMMAX 60000
-#define STRTAMMAX 10000
+#define STRTAMMAX 100
 
 void descompacta (char **, unsigned short int *, FILE *, FILE *);
 void compacta (char **, unsigned short int *, FILE *, FILE *);
@@ -98,29 +98,30 @@ void descompacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE 
 	{
 		acha_nova_string_d (dicionario, tamdic, in, str);
 		if (*tamdic<DICTAMMAX)
-			strcpy(dicionario[(*tamdic)++],str);
+		{
+			strcpy(dicionario[*tamdic],str);
+			if (strlen(str)>2) //ALTERADO
+				dicionario[(*tamdic)++][strlen(str)-1]=0;
+		}
 		else
 		{
 			puts ("Dicionario cheio!");
 			puts (str);
 		}
 		if (!feof(in))
-		{
-			str[strlen(str)-1]=0;
 			fseek (in,-sizeof(unsigned short int),SEEK_CUR);
-		}
-		fputs(str,out);
+		fputc(str[0],out);
 	}
 	(*tamdic)--;
+	printf ("%d\n",strlen("A_"));
 }
 
 void acha_nova_string_d (char **dicionario, unsigned short int *tamdic, FILE *in, char *str)
 {
 	unsigned short int code;
-	char buffer[STRTAMMAX];
 	memset(str,0,STRTAMMAX);
 	int i=0, j=0, achei=0;
-	while ( (!achei) )
+	while ( (!achei) && (i<STRTAMMAX) )
 	{
 		if (fread (&code, sizeof(unsigned short int), 1, in))
 		{
@@ -129,8 +130,8 @@ void acha_nova_string_d (char **dicionario, unsigned short int *tamdic, FILE *in
 			else if ( (code-128) < (*tamdic) ){
 				strcat(str,dicionario[code-128]);
 
-				if (j!=0)
-					str[strlen(str)-1]=0;
+				/*if (j!=0)
+					str[strlen(str)-1]=0;*/
 				i+=(strlen(dicionario[code-128]));
 			}
 			if (j!=0)
@@ -149,7 +150,7 @@ void compacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE *ou
 	while (!feof(in))
 	{
 		code = acha_nova_string_c(dicionario, tamdic, in, str);
-		if (*tamdic<DICTAMMAX)
+		if ( (*tamdic<DICTAMMAX) && ( (code<128) || ((code>127) && (!busca_dicionario(dicionario, *tamdic,str))) ) )
 			strcpy(dicionario[(*tamdic)++],str);
 		fwrite (&code, sizeof(unsigned short int), 1, out);
 		if (!feof(in))
@@ -162,10 +163,9 @@ unsigned short int acha_nova_string_c (char **dicionario, unsigned short int *ta
 {
 	int i, achei=0;
 	unsigned short int code, temp;
-	for (i = 0; i < STRTAMMAX; i++)
-		str[i]=0;
+	memset(str,0,STRTAMMAX);
 	i=0;
-	while ( (!achei) )
+	while ( (!achei) && (i<STRTAMMAX) )
 	{
 		str[i]=fgetc(in);
 		if (strlen(str)==1)
