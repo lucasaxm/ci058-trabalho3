@@ -102,6 +102,8 @@ void descompacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE 
 			strcpy(dicionario[*tamdic],str);
 			if (strlen(str)>2) //ALTERADO
 				dicionario[(*tamdic)++][strlen(str)-1]=0;
+			else
+				(*tamdic)++;
 		}
 		else
 		{
@@ -113,7 +115,6 @@ void descompacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE 
 		fputc(str[0],out);
 	}
 	(*tamdic)--;
-	printf ("%d\n",strlen("A_"));
 }
 
 void acha_nova_string_d (char **dicionario, unsigned short int *tamdic, FILE *in, char *str)
