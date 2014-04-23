@@ -100,10 +100,10 @@ void descompacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE 
 		if (*tamdic<DICTAMMAX)
 		{
 			strcpy(dicionario[*tamdic],str);
-			if (strlen(str)>2) //ALTERADO
-				dicionario[(*tamdic)++][strlen(str)-1]=0;
-			else
-				(*tamdic)++;
+			// if (strlen(str)>2) //ALTERADO
+			// 	dicionario[(*tamdic)++][strlen(str)-1]=0;
+			// else
+			(*tamdic)++;
 		}
 		else
 		{
@@ -111,8 +111,11 @@ void descompacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE 
 			puts (str);
 		}
 		if (!feof(in))
+		{
 			fseek (in,-sizeof(unsigned short int),SEEK_CUR);
-		fputc(str[0],out);
+			str[strlen(str)-1]=0;
+		}
+		fputs(str,out);
 	}
 	(*tamdic)--;
 }
@@ -120,8 +123,9 @@ void descompacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE 
 void acha_nova_string_d (char **dicionario, unsigned short int *tamdic, FILE *in, char *str)
 {
 	unsigned short int code;
+	char temp[STRTAMMAX];
 	memset(str,0,STRTAMMAX);
-	int i=0, j=0, achei=0;
+	int i=0, j=0, k=0, achei=0;
 	while ( (!achei) && (i<STRTAMMAX) )
 	{
 		if (fread (&code, sizeof(unsigned short int), 1, in))
@@ -130,13 +134,22 @@ void acha_nova_string_d (char **dicionario, unsigned short int *tamdic, FILE *in
 				str[i++]= (char)code;
 			else if ( (code-128) < (*tamdic) ){
 				strcat(str,dicionario[code-128]);
-
-				/*if (j!=0)
-					str[strlen(str)-1]=0;*/
 				i+=(strlen(dicionario[code-128]));
 			}
 			if (j!=0)
+			{
+				for (k = 2; k<i; k++)
+				{
+					strncpy(temp,str,k);
+					temp[k]=0;
+					if (!busca_dicionario(dicionario,*tamdic, temp))
+					{
+						strcpy(str,temp);
+						break;
+					}
+				}
 				achei=1;
+			}
 			j++;
 		}
 		else
