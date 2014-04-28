@@ -8,10 +8,8 @@
 
 void descompacta (char **, unsigned short int *, FILE *, FILE *);
 void compacta (char **, unsigned short int *, FILE *, FILE *);
-void acha_nova_string_d (char **, unsigned short int *, FILE *, char *);
-unsigned short int acha_nova_string_c (char **, unsigned short int *, FILE *, char *);
 unsigned short int busca_dicionario (char **, unsigned short int, char *);
-char *insere_no_dicionario (int);
+void code2str (char **, unsigned short int , char *);
 FILE *abre_arquivo(const char *, const char *);
 char *ngets(char *, int, FILE *);
 void LimpaBuffer ();
@@ -92,120 +90,90 @@ int conta_linhas(FILE *arq)
 
 void descompacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE *out)
 {
-	char str[STRTAMMAX];
-
+	unsigned short int pW, cW;
+	char scW[STRTAMMAX], P[STRTAMMAX], C;
+	fread (&cW, sizeof(unsigned short int), 1, in);	// 2. cW <= primeira palavra código na sequência codificada (sempre é uma raiz);
+	fputc ((char) cW, out);	// 3. Coloque a string(cW) na sequência de saída;
+	pW = cW;	// 4. pW <= cW;
+	fread (&cW, sizeof(unsigned short int), 1, in);	// 5. cW <= próxima palavra código da sequência codificada;
+	code2str (dicionario, cW, scW);
 	while (!feof(in))
 	{
-		acha_nova_string_d (dicionario, tamdic, in, str);
-		if (*tamdic<DICTAMMAX)
-		{
-			strcpy(dicionario[*tamdic],str);
-			// if (strlen(str)>2) //ALTERADO
-			// 	dicionario[(*tamdic)++][strlen(str)-1]=0;
-			// else
-			(*tamdic)++;
+		if (busca_dicionario(dicionario,*tamdic,scW))	// 6. A string(cW) existe no dicionário ?
+		{	// a. se sim,
+			fputs (scW,out);	// i. coloque a string(cW) na sequência de saída;
+			code2str (dicionario, pW,P);	// ii. P <= string(pW);
+			C = scW[0];	// iii. C <= primeiro caracter da string(cW);
+			P[strlen(P)+1]=0;
+			P[strlen(P)]=C;
+			strcpy(dicionario[(*tamdic)++],P);	// iv. adicione a string P+C ao dicionário;
 		}
-		else
+		else	// b. se não,
 		{
-			puts ("Dicionario cheio!");
-			puts (str);
-		}
-		if (!feof(in))
-		{
-			fseek (in,-sizeof(unsigned short int),SEEK_CUR);
-			str[strlen(str)-1]=0;
-		}
-		fputs(str,out);
+			code2str (dicionario, pW,P);	// i. P <= string(pW);
+			C = scW[0];	// ii. C <= primeiro caracter da string(cW);
+			P[strlen(P)+1]=0;
+			P[strlen(P)]=C;
+			fputs (P,out);
+			strcpy(dicionario[(*tamdic)++],P);	// iii. coloque a string P+C na sequência de saída e adicione-a ao dicionário;
+		}	// 7. Existem mais palavras código na sequência codificada ?
+		pW = cW;	// 4. pW <= cW;
+		fread (&cW, sizeof(unsigned short int), 1, in);	// 5. cW <= próxima palavra código da sequência codificada;
+		code2str (dicionario, cW, scW);
 	}
-	(*tamdic)--;
 }
 
-void acha_nova_string_d (char **dicionario, unsigned short int *tamdic, FILE *in, char *str)
+void code2str (char **dicionario, unsigned short int code, char *str)
 {
-	unsigned short int code;
-	char temp[STRTAMMAX];
-	memset(str,0,STRTAMMAX);
-	int i=0, j=0, k=0, achei=0;
-	while ( (!achei) && (i<STRTAMMAX) )
+	if (code<128)
 	{
-		if (fread (&code, sizeof(unsigned short int), 1, in))
-		{
-			if (code<128)
-				str[i++]= (char)code;
-			else if ( (code-128) < (*tamdic) ){
-				strcat(str,dicionario[code-128]);
-				i+=(strlen(dicionario[code-128]));
-			}
-			if (j!=0)
-			{
-				for (k = 2; k<i; k++)
-				{
-					strncpy(temp,str,k);
-					temp[k]=0;
-					if (!busca_dicionario(dicionario,*tamdic, temp))
-					{
-						strcpy(str,temp);
-						break;
-					}
-				}
-				achei=1;
-			}
-			j++;
-		}
-		else
-			achei=1;
+		str[0]=(char) code;
+		str[1]=0;
 	}
+	else
+		strcpy (str, dicionario[code-128]);
 }
 
 void compacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE *out)
 {
-	char str[STRTAMMAX];
-	unsigned short int code;
-	while (!feof(in))
+	char I[STRTAMMAX];
+	memset(I,0,STRTAMMAX);	// 1. No início o dicionário contém todas as raízes possíveis e I é vazio;
+	char c;
+	unsigned short int code, codeant, len=0;
+	c=fgetc(in);	// 2. c <= próximo caractere da sequência de entrada;
+	while(!feof(in))
 	{
-		code = acha_nova_string_c(dicionario, tamdic, in, str);
-		if ( (*tamdic<DICTAMMAX) && ( (code<128) || ((code>127) && (!busca_dicionario(dicionario, *tamdic,str))) ) )
-			strcpy(dicionario[(*tamdic)++],str);
-		fwrite (&code, sizeof(unsigned short int), 1, out);
-		if (!feof(in))
-			fseek (in,-1,SEEK_CUR);
-	}
-	(*tamdic)--;
-}
-
-unsigned short int acha_nova_string_c (char **dicionario, unsigned short int *tamdic, FILE *in, char *str)
-{
-	int i, achei=0;
-	unsigned short int code, temp;
-	memset(str,0,STRTAMMAX);
-	i=0;
-	while ( (!achei) && (i<STRTAMMAX) )
-	{
-		str[i]=fgetc(in);
-		if (strlen(str)==1)
-		{
-			code=str[0];
-			i++;
+		I[len++]=c;		// I<=I+c
+		if (code = busca_dicionario(dicionario, *tamdic, I))	// 3. A string I+c existe no dicionário?
+		{	// se sim,
+			codeant=code;	//i. I <= I+c;
 		}
-		else
+		else	// se não,
 		{
-			temp = busca_dicionario(dicionario, *tamdic, str);
-			if (temp!=0)
-				code = temp;
-			else
-				achei=1;
-			i++;
+			fwrite (&codeant, sizeof(unsigned short int), 1, out); // i. coloque a palavra código correspondente a I na sequência codificada;
+			strcpy(dicionario[(*tamdic)++],I);	// ii. adicione a string I+c ao dicionário;
+			memset(I,0,STRTAMMAX);
+			I[0]=c;	//iii. I <= c;
+			codeant=c;
+			len=1;
 		}
-	}
-	return code;
+		c=fgetc(in);
+	} // 4. Existem mais caracteres na sequência de entrada ?
+	code = busca_dicionario(dicionario, *tamdic, I);
+	fwrite (&code, sizeof(unsigned short int), 1, out);	// ii. coloque a palavra código correspondente a I na sequência codificada;
 }
 
 unsigned short int busca_dicionario (char **dicionario, unsigned short int tamdic, char *str)
 {
 	unsigned short int i;
-	for (i = 0; i < tamdic; i++)
-		if (!strcmp(dicionario[i],str))
-			return i+128;
+	if (strlen(str)==1)
+		return str[0];
+	else
+	{
+		for (i = 0; i < tamdic; i++)
+			if (!strcmp(dicionario[i],str))
+				return i+128;
+	}
 	return 0;
 }
 
