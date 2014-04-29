@@ -4,7 +4,7 @@
 
 
 #define DICTAMMAX 60000
-#define STRTAMMAX 100
+#define STRTAMMAX 1000
 
 void descompacta (char **, unsigned short int *, FILE *, FILE *);
 void compacta (char **, unsigned short int *, FILE *, FILE *);
@@ -111,7 +111,7 @@ void descompacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE 
 		else	// b. se não,
 		{
 			code2str (dicionario, pW,P);	// i. P <= string(pW);
-			C = scW[0];	// ii. C <= primeiro caracter da string(cW);
+			C = P[0];	// ii. C <= primeiro caracter da string(pW);
 			P[strlen(P)+1]=0;
 			P[strlen(P)]=C;
 			fputs (P,out);
