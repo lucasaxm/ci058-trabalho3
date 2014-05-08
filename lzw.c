@@ -70,12 +70,14 @@ int main(int argc, char const *argv[])
 			break;
 		}
 	}
+/*	//Imprime dicionario na saida padrao
+
 	printf("tamdic=%hd\nChave\tValor\n",tamdic);
 	for (i = 0; i < tamdic; i++)
 	{
 		printf("%hd\t", i+128);
 		puts(dicionario[i]);
-	}
+	}*/
 	return 0;
 }
 
