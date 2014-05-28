@@ -70,24 +70,6 @@ int main(int argc, char const *argv[])
 			break;
 		}
 	}
-/*	//Imprime dicionario na saida padrao
-
-	printf("tamdic=%hd\nChave\tValor\n",tamdic);
-	for (i = 0; i < tamdic; i++)
-	{
-		printf("%hd\t", i+128);
-		puts(dicionario[i]);
-	}*/
-	return 0;
-}
-
-int conta_linhas(FILE *arq)
-{
-	int cont=0;
-	while (!feof(arq))
-		if (fgetc(arq)=='\n')
-			cont++;
-	return cont;
 }
 
 void descompacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE *out)
@@ -108,7 +90,7 @@ void descompacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE 
 			C = scW[0];	// iii. C <= primeiro caracter da string(cW);
 			P[strlen(P)+1]=0;
 			P[strlen(P)]=C;
-			if (*tamdic<DICTAMMAX)
+			if ((*tamdic<DICTAMMAX) && (strlen(P)<STRTAMMAX))
 				strcpy(dicionario[(*tamdic)++],P);	// iv. adicione a string P+C ao dicionário;
 		}
 		else	// b. se não,
@@ -118,7 +100,7 @@ void descompacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE 
 			P[strlen(P)+1]=0;
 			P[strlen(P)]=C;
 			fputs (P,out);
-			if (*tamdic<DICTAMMAX)
+			if ((*tamdic<DICTAMMAX) && (strlen(P)<STRTAMMAX))
 				strcpy(dicionario[(*tamdic)++],P);	// iii. coloque a string P+C na sequência de saída e adicione-a ao dicionário;
 		}	// 7. Existem mais palavras código na sequência codificada ?
 		pW = cW;	// 4. pW <= cW;
@@ -148,14 +130,14 @@ void compacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE *ou
 	while(!feof(in))
 	{
 		I[len++]=c;		// I<=I+c
-		if (code = busca_dicionario(dicionario, *tamdic, I))	// 3. A string I+c existe no dicionário?
+		if ( (code = busca_dicionario(dicionario, *tamdic, I)) && (len<STRTAMMAX) )	// 3. A string I+c existe no dicionário?
 		{	// se sim,
 			codeant=code;	//i. I <= I+c;
 		}
 		else	// se não,
 		{
 			fwrite (&codeant, sizeof(unsigned short int), 1, out); // i. coloque a palavra código correspondente a I na sequência codificada;
-			if (*tamdic<DICTAMMAX)
+			if ((*tamdic<DICTAMMAX) && (code==0))
 				strcpy(dicionario[(*tamdic)++],I);	// ii. adicione a string I+c ao dicionário;
 			memset(I,0,STRTAMMAX);
 			I[0]=c;	//iii. I <= c;
