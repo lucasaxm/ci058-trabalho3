@@ -1,0 +1,9 @@
+#!/bin/bash
+echo "Limpando..."
+if [[ -d $1 ]]; then
+	rm -fv $1/*.out
+	rm -fv $1/*.lzw
+else
+	rm -fv *.out
+	rm -fv *.lzw
+fi

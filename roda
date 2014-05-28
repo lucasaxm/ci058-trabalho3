@@ -1,0 +1,53 @@
+#!/bin/bash
+
+function roda(){
+	if [[ -s $1 ]]; then
+		echo "Tamanho do arquivo '"$1"': "
+		tam=$(du -b $1 | cut -f1)
+		echo $tam
+		echo
+		echo "Compactando..."
+		time ./lzw -c $1
+
+		x=$(echo $1 | cut -d "." -f1)
+		y=$x".lzw"
+		z=$x".out"
+
+		echo "Tamanho do arquivo compactado '"$y"': "
+		tamy=$(du -b $y | cut -f1)
+		echo $tamy
+		taxa=$(echo 100-$tamy*100/$tam | bc)
+		echo "Taxa de compressao: "$taxa"%"
+		echo
+		echo "Descompactando..."
+		time ./lzw -d $y
+		echo "Tamanho do arquivo descompactado '"$z"': "
+		du -b $z | cut -f1
+		diff $1 $z
+	else
+		echo "Arquivo de entrada não existe ou não especificado."
+	fi
+}
+
+clear
+make -B limpa
+make -B lzw
+
+TESTES_DIR="testes/"
+if [[ $1 = "-all" ]]; then
+	echo "Testando para todos os arquivos."
+	for i in $(ls $TESTES_DIR | grep txt); do
+		echo "["$TESTES_DIR$i"]"
+		roda $TESTES_DIR$i
+		echo
+		echo "---------------------------------------"
+	done
+elif [[ -s $TESTES_DIR$1 ]]; then
+	echo "["$TESTES_DIR$1"]"
+	roda $TESTES_DIR$1
+	echo
+	echo "---------------------------------------"
+else
+	echo "Sintaxe:"
+	echo "./roda -all | testfile"
+fi

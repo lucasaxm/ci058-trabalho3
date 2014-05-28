@@ -55,8 +55,8 @@ int main(int argc, char const *argv[])
 			FILE *infile = abre_arquivo(argv[2],"rb");
 			char outname[t+5];
 			strcpy(outname,arq_semext);
-			char pontotxt[]=".txt";
-			strcat(outname,pontotxt);
+			char pontoout[]=".out";
+			strcat(outname,pontoout);
 			FILE *outfile = abre_arquivo(outname,"w");
 			descompacta (dicionario,&tamdic,infile,outfile);
 			fclose (infile);
@@ -108,7 +108,8 @@ void descompacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE 
 			C = scW[0];	// iii. C <= primeiro caracter da string(cW);
 			P[strlen(P)+1]=0;
 			P[strlen(P)]=C;
-			strcpy(dicionario[(*tamdic)++],P);	// iv. adicione a string P+C ao dicionário;
+			if (*tamdic<DICTAMMAX)
+				strcpy(dicionario[(*tamdic)++],P);	// iv. adicione a string P+C ao dicionário;
 		}
 		else	// b. se não,
 		{
@@ -117,7 +118,8 @@ void descompacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE 
 			P[strlen(P)+1]=0;
 			P[strlen(P)]=C;
 			fputs (P,out);
-			strcpy(dicionario[(*tamdic)++],P);	// iii. coloque a string P+C na sequência de saída e adicione-a ao dicionário;
+			if (*tamdic<DICTAMMAX)
+				strcpy(dicionario[(*tamdic)++],P);	// iii. coloque a string P+C na sequência de saída e adicione-a ao dicionário;
 		}	// 7. Existem mais palavras código na sequência codificada ?
 		pW = cW;	// 4. pW <= cW;
 		fread (&cW, sizeof(unsigned short int), 1, in);	// 5. cW <= próxima palavra código da sequência codificada;
@@ -153,7 +155,8 @@ void compacta (char **dicionario, unsigned short int *tamdic, FILE *in, FILE *ou
 		else	// se não,
 		{
 			fwrite (&codeant, sizeof(unsigned short int), 1, out); // i. coloque a palavra código correspondente a I na sequência codificada;
-			strcpy(dicionario[(*tamdic)++],I);	// ii. adicione a string I+c ao dicionário;
+			if (*tamdic<DICTAMMAX)
+				strcpy(dicionario[(*tamdic)++],I);	// ii. adicione a string I+c ao dicionário;
 			memset(I,0,STRTAMMAX);
 			I[0]=c;	//iii. I <= c;
 			codeant=c;
